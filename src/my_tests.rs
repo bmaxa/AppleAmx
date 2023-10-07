@@ -1,6 +1,9 @@
 use amx::{prelude::*, XBytes, XRow, YBytes, YRow, ZRow};
 use std::time::*;
-
+extern {
+  fn init_time()->u64;
+  fn time_me(tm:u64)->f64;
+}
 fn main() {
     unsafe {
         let mut ctx = amx::AmxCtx::new().unwrap();
@@ -51,8 +54,8 @@ fn main() {
             let two1 = two;
             //ctx.fma64_vec(0,0,0,0);
             //ctx.fma64_vec(7,7,7,0);
-                 let start = Instant::now();
-                 let mut sum = 0.0;
+            let tm = init_time();
+            let mut sum = 0.0;
             for i in 0..1000000 {
              for j in 0..8 {
                 two[j]=(i*8+j+1) as f64;
@@ -67,19 +70,17 @@ fn main() {
               //ctx.fma64_mat(0,0,0,0);
               sum+=two.iter().sum::<f64>();
             }
-                 let end = start.elapsed();
-                 let diff = (end.as_secs()*1000000000+end.subsec_nanos() as u64) as f64 / 1000000000.0;
-                 println!("simd time {} sum {}",diff, sum);
-                 let start = Instant::now();
-                 let mut sum = 0.0;
+            let res = time_me(tm);
+            println!("simd time {} sum {}",res, sum);
+            let tm = init_time();
+            let mut sum = 0.0;
             for i in 0..8000000 {
              // for v in two1 {
                 sum+=((i+1)as f64).sqrt()*1.0/((i+1) as f64);
               //}
             }
-                 let end = start.elapsed();
-                 let diff = (end.as_secs()*1000000000+end.subsec_nanos() as u64) as f64 / 1000000000.0;
-                 println!("seq time {} sum {}",diff,sum);
+            let res = time_me(tm);
+            println!("seq time {} sum {}",res,sum);
             ctx.load512(&two1,ZRow(50));
             ctx.sqrt(50,51);
             ctx.store512(&mut two,ZRow(51));
