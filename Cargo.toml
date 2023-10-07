@@ -1,0 +1,27 @@
+[package]
+name = "amx"
+version = "0.0.0"
+authors = ["yvt <i@yvt.jp>"]
+edition = "2018"
+license = "MIT/Apache-2.0"
+[[bin]]
+name = "my_tests"
+path = "src/my_tests.rs"
+[features]
+default = ["either", "doc_cfg"]
+doc_cfg = []
+
+[dependencies]
+either = { version = "1.6.1", optional = true }
+cfg-if = "1"
+clap = "*"
+
+[dev-dependencies]
+quickcheck_macros = "0.9.1"
+aligned_box = "0.2.0"
+env_logger = "0.7"
+quickcheck = "0.9.2"
+itertools = "0.10.0"
+either = "1.6.1"
+clap = "*"
+log = "0.4.11"
