@@ -7,7 +7,7 @@ use core::arch::asm;
 macro_rules! op_in {
 {$OP:tt , $operand:tt} => {
     asm!(
-        ".align 8\n.word (0x201000 + ({op} << 5) + 0{operand} - ((0{operand} >> 4) * 6))",
+        ".word (0x201000 + ({op} << 5) + 0{operand} - ((0{operand} >> 4) * 6))",
         op = const $OP,
         operand = in(reg) $operand
     );}
@@ -15,7 +15,7 @@ macro_rules! op_in {
 /// Emit an AMX instruction with a 5-bit immediate.
 macro_rules!op_imm {{ $OP: tt, $OPERAND: tt}=> {
     asm!(
-        ".align 8\n.word 0x00201000 + ({op} << 5) + {operand}",
+        ".word 0x00201000 + ({op} << 5) + {operand}",
         op = const $OP,
         operand = const $OPERAND
     );}

@@ -57,6 +57,7 @@ fn main() {
             let tm = init_time();
             let mut sum = 0.0;
             for i in 0..1000000 {
+
              for j in 0..8 {
                 two[j]=(i*8+j+1) as f64;
               }
@@ -67,7 +68,13 @@ fn main() {
               ctx.extr_yh(52,0);
               ctx.fma64_vec_xy(51,0,0,0);
               ctx.store512(&mut two,ZRow(51));
+
               //ctx.fma64_mat(0,0,0,0);
+              //ctx.fma32_mat(0,0,0,0);
+              //ctx.fma16_mat(0,0,0,0);
+              //ctx.extr_xh(0,0);
+              //ctx.extr_yh(0,0);
+              //ctx.fma64_vec_x(0,0);
               sum+=two.iter().sum::<f64>();
             }
             let res = time_me(tm);
