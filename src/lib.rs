@@ -224,7 +224,7 @@ pub trait Amx: crate::ops::AmxOps {
 
     ) {
         self.mac16(
-            yrow
+            yrow * 64
                 | xrow * 64 << 10
                 | zrow << 20
                 | 1 << 27
