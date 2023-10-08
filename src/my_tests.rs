@@ -103,6 +103,16 @@ fn main() {
               ctx.extr_yh(0,0);
             }
             println!("single extr_yh {}",time_me(tm));
+            let tm = init_time();
+            for _ in 0..1000000 {
+              ctx.load512(&two,ZRow(0));
+            }
+            println!("single load512 {}",time_me(tm));
+            let tm = init_time();
+            for _ in 0..1000000 {
+              ctx.store512(&mut two,ZRow(0));
+            }
+            println!("single store512 {}",time_me(tm));
 
             let tm = init_time();
             let mut sum = 0.0;
