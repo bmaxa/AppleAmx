@@ -11,9 +11,9 @@ struct Opts {
 */
 fn main() {
   //  let opts: Opts = Clap::parse();
-    println!("Launching {} threads with AMX enabled", 1);
+    println!("Launching {} threads with AMX enabled", 4);
 
-    for i in 1..1 {
+    for i in 1..4 {
         std::thread::spawn(move || stress_loop(i));
     }
     stress_loop(0);
@@ -27,23 +27,7 @@ fn stress_loop(tid: usize) {
         let start = Instant::now();
         let count = 10_000_000;
         for _ in 0..count / 16 {
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(0), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(1), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(0), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(1), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(0), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(1), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(0), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(1), true);
-
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(0), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(1), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(0), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(1), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(0), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(1), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(0), true);
-            ctx.outer_product_i16_xy_to_z(Some(XBytes(0)), Some(YBytes(0)), ZRow(1), true);
+            ctx.int16_mat(0, 0, 0);
         }
         let rate = count as f64 / start.elapsed().as_secs_f64();
         println!("[{:3}] {:2} amxmac16s per second", tid, rate);

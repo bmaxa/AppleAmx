@@ -44,32 +44,31 @@ fn outer_product_i16_xy_to_z() {
         log::info!("x = {:?}", *(in_x.as_ptr() as *const [[u16; 32]; 8]));
         log::info!("y = {:?}", *(in_y.as_ptr() as *const [[u16; 32]; 8]));
 
-        for (x_offset, y_offset, &z_index) in iproduct!(
-            (0..0x200).step_by(31),
-            (0..0x200).step_by(47),
+        for (xrow, yrow, &zrow) in iproduct!(
+            (0..8).step_by(31),
+            (0..8).step_by(47),
             &[0, 1, 50, 63]
         ) {
             log::debug!(
-                "(x_offset, y_offset, z_index) = {:?}",
-                (x_offset, y_offset, z_index)
+                "(xrow, yrow, zrow) = {:?}",
+                (xrow, yrow, zrow)
             );
 
-            ctx.outer_product_i16_xy_to_z(
-                Some(XBytes(x_offset)),
-                Some(YBytes(y_offset)),
-                ZRow(z_index),
-                false, // don't accumulate
+            ctx.int16_mat_xy(
+                zrow,
+                xrow,
+                yrow
             );
 
             // Calculate the expected answer
             for x_i in (0..64usize).step_by(2) {
                 for y_i in (0..64usize).step_by(2) {
                     let x =
-                        i16::from_le_bytes(read_array_wrapping(&in_x, x_i.wrapping_add(x_offset)));
+                        i16::from_le_bytes(read_array_wrapping(&in_x, x_i.wrapping_add(xrow as usize)));
                     let y =
-                        i16::from_le_bytes(read_array_wrapping(&in_y, y_i.wrapping_add(y_offset)));
+                        i16::from_le_bytes(read_array_wrapping(&in_y, y_i.wrapping_add(yrow as usize)));
                     let prod = x.wrapping_mul(y).to_le_bytes();
-                    let out_row = (z_index % 2 + y_i) % 64;
+                    let out_row = (zrow as usize % 2 + y_i) % 64;
                     expected_z[out_row * 64 + x_i..][..2].copy_from_slice(&prod);
                 }
             }

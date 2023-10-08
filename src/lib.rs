@@ -19,11 +19,10 @@
 //!          67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82i16];
 //! unsafe { ctx.load512(x.as_ptr(), XRow(0)) };
 //! unsafe { ctx.load512(y.as_ptr(), YRow(0)) };
-//! ctx.outer_product_i16_xy_to_z(
-//!     Some(XBytes(0)),    // input from X starting from byte offset 0
-//!     Some(YBytes(0)),    // input from Y starting from byte offset 0
-//!     ZRow(0),            // output to Z starting from row offset 0
-//!     false,              // don't accumulate
+//! ctx.int16_mat_xy(
+//!     0,
+//!     0,
+//!     0
 //! );
 //! let z: [[i16; 32]; 64] = unsafe { std::mem::transmute(ctx.read_z()) };
 //! for (x_i, &x) in x.iter().enumerate() {
@@ -204,63 +203,56 @@ pub trait Amx: crate::ops::AmxOps {
     /// `z_index` must be in range `0..64`. Only the least significant bit of
     /// `z_index` will be taken into consideration.
     #[inline(always)]
-    fn outer_product_i16_xy_to_z(
+    fn int16_mat(
         &mut self,
-        x_offset_bytes: Option<XBytes>,
-        y_offset_bytes: Option<YBytes>,
-        z_index: ZRow,
-        accumulate: bool,
+        zrow: u64,
+        xrow: u64,
+        yrow: u64
     ) {
-        // FIXME: rustfmt doesn't like patterns in provided trait methods
-        let z_index = z_index.0;
-        debug_assert!(x_offset_bytes.unwrap_or_default().0 < 0x200);
-        debug_assert!(y_offset_bytes.unwrap_or_default().0 < 0x200);
-        debug_assert!(z_index < 64);
-        // TODO: widening (i32 output)
-        // TODO: vector output (reducing)
         self.mac16(
-            (y_offset_bytes.unwrap_or_default().0
-                | (x_offset_bytes.unwrap_or_default().0 << 10)
-                | (z_index << 20)
-                | (((!accumulate) as usize) << 27)
-                | ((x_offset_bytes.is_none() as usize) << 28)
-                | ((y_offset_bytes.is_none() as usize) << 29)) as u64,
+            yrow
+                | xrow * 64 << 10
+                | zrow << 20
         );
     }
     #[inline(always)]
-    fn outer_product_u32_xy_to_z(
+    fn int16_mat_xy(
         &mut self,
-        x_offset_bytes: Option<XBytes>,
-        y_offset_bytes: Option<YBytes>,
-        z_index: ZRow,
-        accumulate: bool,
+        zrow: u64,
+        xrow: u64,
+        yrow: u64,
+
     ) {
-        // FIXME: rustfmt doesn't like patterns in provided trait methods
-        let z_index = z_index.0;
-        debug_assert!(x_offset_bytes.unwrap_or_default().0 < 0x200);
-        debug_assert!(y_offset_bytes.unwrap_or_default().0 < 0x200);
-        debug_assert!(z_index < 64);
-        // TODO: widening (i32 output)
-        // TODO: vector output (reducing)
-        self.matint(
-            (y_offset_bytes.unwrap_or_default().0
-                | (x_offset_bytes.unwrap_or_default().0 << 10)
-                | (z_index << 20)
-                | (((!accumulate) as usize) << 27)
-                | ((x_offset_bytes.is_none() as usize) << 28)
-                | ((y_offset_bytes.is_none() as usize) << 29)) as u64
-                | (3 << 42)
-                | (2 << 47),
+        self.mac16(
+            yrow
+                | xrow * 64 << 10
+                | zrow << 20
+                | 1 << 27
         );
     }
     #[inline(always)]
-    fn reduce_u32_to_z(
+    fn int32_mat(
+        &mut self,
+        zrow: u64,
+        xrow: u64,
+        yrow: u64,
+    ) {
+        self.matint(
+            yrow * 64
+                | (xrow * 64) << 10
+                | zrow << 20
+                | 3 << 42
+                | 2 << 47,
+        );
+    }
+    #[inline(always)]
+    fn int32_mat_z(
         &mut self,
     ) {
         self.matint(
-                (4 << 42)
-                | (4 << 47)
-                | (1 << 58),
+                4 << 42
+                | 4 << 47
+                | 1 << 58
         );
     }
     #[inline(always)]

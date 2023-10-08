@@ -40,15 +40,6 @@ fn main() {
        print_a::<8,8>(&got_x);
        println!("Y");
        print_a::<8,8>(&got_y);
-/*
-            ctx.outer_product_u32_xy_to_z(
-                Some(XBytes(x_offset)),
-                Some(YBytes(y_offset)),
-                ZRow(z_index),
-                false, // don't accumulate
-            );
-            ctx.reduce_u32_to_z();
-*/
             let mut two:[f64;8] = [2.0;8];
             let two1 = two;
             //ctx.fma64_vec(0,0,0,0);
@@ -115,6 +106,17 @@ fn main() {
             println!("single store512 {}",time_me(tm));
 
             let tm = init_time();
+            for _ in 0..1000000 {
+              ctx.int32_mat(
+                0,
+                0,
+                0
+              );
+            }
+            println!("single int32_mat {}",time_me(tm));
+
+            //ctx.reduce_u32_to_z();
+
             let mut sum = 0.0;
             for i in 0..8000000 {
              // for v in two1 {
