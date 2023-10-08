@@ -1,4 +1,4 @@
-use amx::{prelude::*, XBytes, XRow, YBytes, YRow, ZRow};
+use amx::{prelude::*, XRow, YRow, ZRow};
 const PI: f64 = 3.141592653589793;
 const SOLAR_MASS: f64 = 4.0 * PI * PI;
 const YEAR: f64 = 365.24;
@@ -16,27 +16,27 @@ static mut VZ:[f64;16] = [0.0,-6.90460016972063023e-05 * YEAR,2.3041729757376392
 static mut MASS:[f64;16] = [SOLAR_MASS,9.54791938424326609e-04 * SOLAR_MASS,2.85885980666130812e-04 * SOLAR_MASS,4.36624404335156298e-05 * SOLAR_MASS,5.15138902046611451e-05 * SOLAR_MASS,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
 unsafe fn advance(dt: f64, steps: i32) {
     //let len = bodies.len();
-    let mut tmpX = [0.0;8];
-    let mut tmpY = [0.0;8];
-    let mut tmpZ = [0.0;8];
-    let mut tmpVX = [0.0;8];
-    let mut tmpVY = [0.0;8];
-    let mut tmpVZ = [0.0;8];
-    let mut tmpMASS = [0.0;8];
+    let mut tmp_x = [0.0;8];
+    let mut tmp_y = [0.0;8];
+    let mut tmp_z= [0.0;8];
+    let mut tmp_vx = [0.0;8];
+    let mut tmp_vy = [0.0;8];
+    let mut tmp_vz = [0.0;8];
+    let mut tmp_mass = [0.0;8];
     let dt = [dt;8];
     let mut ctx = amx::AmxCtx::new().unwrap();
     ctx.load512(&dt,ZRow(5));
     for _ in 0 .. steps {
         for i in 0..N_BODIES as u64 {
             for j in 0..8 {
-              tmpX[j] = X[i as usize];
-              tmpY[j] = Y[i as usize];
-              tmpZ[j] = Z[i as usize];
-              tmpMASS[j] = MASS[i as usize];
+              tmp_x[j] = X[i as usize];
+              tmp_y[j] = Y[i as usize];
+              tmp_z[j] = Z[i as usize];
+              tmp_mass[j] = MASS[i as usize];
             }
-            ctx.load512(&tmpX,ZRow(0));
-            ctx.load512(&tmpY,ZRow(1));
-            ctx.load512(&tmpZ,ZRow(2));
+            ctx.load512(&tmp_x,ZRow(0));
+            ctx.load512(&tmp_y,ZRow(1));
+            ctx.load512(&tmp_z,ZRow(2));
             ctx.load512(&X[i as usize +1],XRow(0));
             ctx.load512(&Y[i as usize +1],XRow(1));
             ctx.load512(&Z[i as usize +1],XRow(2));
@@ -85,13 +85,13 @@ unsafe fn advance(dt: f64, steps: i32) {
             ctx.fms64_vec_xy(60,0,3,0);
             ctx.fms64_vec_xy(61,1,3,0);
             ctx.fms64_vec_xy(62,2,3,0);
-            ctx.store512(&mut tmpVX,ZRow(60));
-            ctx.store512(&mut tmpVY,ZRow(61));
-            ctx.store512(&mut tmpVZ,ZRow(62));
-            VX[i as usize] += tmpVX.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
-            VY[i as usize] += tmpVY.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
-            VZ[i as usize] += tmpVZ.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
-            ctx.load512(&tmpMASS,XRow(3));
+            ctx.store512(&mut tmp_vx,ZRow(60));
+            ctx.store512(&mut tmp_vy,ZRow(61));
+            ctx.store512(&mut tmp_vz,ZRow(62));
+            VX[i as usize] += tmp_vx.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
+            VY[i as usize] += tmp_vy.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
+            VZ[i as usize] += tmp_vz.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
+            ctx.load512(&tmp_mass,XRow(3));
             ctx.extr_yh(6,3);// mag -> Y[3]
             ctx.fma64_vec_xy(3,3,3,0);// massi_mag
 
@@ -115,8 +115,8 @@ unsafe fn advance(dt: f64, steps: i32) {
         }
     }
 }
-static zero_point_five:[f64;8]=[0.5;8];
-static zero:[f64;8]=[0.0;8];
+static ZERO_POINT_FIVE:[f64;8]=[0.5;8];
+static ZERO:[f64;8]=[0.0;8];
 unsafe fn energy() -> f64 {
     let mut e = 0.0;
     let mut ctx = amx::AmxCtx::new().unwrap();
@@ -134,7 +134,7 @@ unsafe fn energy() -> f64 {
     ctx.extr_yh(2,0);
     ctx.fma64_vec_xz(0,0);
     ctx.fma64_vec_yz(0,0);
-    ctx.load512(&zero_point_five,YRow(1));
+    ctx.load512(&ZERO_POINT_FIVE,YRow(1));
     ctx.extr_xh(0,0);
     ctx.fma64_vec_xy(0,0,3,0);
     ctx.extr_xh(0,0);
@@ -143,27 +143,27 @@ unsafe fn energy() -> f64 {
     ctx.store512(&mut result,ZRow(0));
     e += result.iter().sum::<f64>();
 
-    let mut tmpX = [0.0;8];
-    let mut tmpY = [0.0;8];
-    let mut tmpZ = [0.0;8];
-    let mut tmpMASS = [0.0;8];
+    let mut tmp_x = [0.0;8];
+    let mut tmp_y = [0.0;8];
+    let mut tmp_z = [0.0;8];
+    let mut tmp_mass = [0.0;8];
     for i in 0..N_BODIES as u64-1 {
       for j in 0..8{
-        tmpX[j] = X[i as usize];
-        tmpY[j] = Y[i as usize];
-        tmpZ[j] = Z[i as usize];
-        tmpMASS[j] = MASS[i as usize];
+        tmp_x[j] = X[i as usize];
+        tmp_y[j] = Y[i as usize];
+        tmp_z[j] = Z[i as usize];
+        tmp_mass[j] = MASS[i as usize];
       }
-      ctx.load512(&tmpX,ZRow(0));
-      ctx.load512(&tmpY,ZRow(1));
-      ctx.load512(&tmpZ,ZRow(2));
+      ctx.load512(&tmp_x,ZRow(0));
+      ctx.load512(&tmp_y,ZRow(1));
+      ctx.load512(&tmp_z,ZRow(2));
       ctx.load512(&X[i as usize +1],XRow(0));
       ctx.load512(&Y[i as usize +1],XRow(1));
       ctx.load512(&Z[i as usize +1],XRow(2));
       ctx.fms64_vec_xz(0,0);
       ctx.fms64_vec_xz(1,1);
       ctx.fms64_vec_xz(2,2);
-      ctx.load512(&tmpMASS,YRow(3));
+      ctx.load512(&tmp_mass,YRow(3));
       ctx.load512(&MASS[i as usize +1],XRow(3));
       ctx.fma64_vec_xy(3,3,3,0);
       ctx.extr_xh(0,0);
@@ -185,7 +185,7 @@ unsafe fn energy() -> f64 {
       ctx.rcp(51,50);
       ctx.extr_xh(50,0);
       ctx.extr_yh(3,0);
-      ctx.load512(&zero,ZRow(4));
+      ctx.load512(&ZERO,ZRow(4));
       ctx.fma64_vec_xy(4,0,0,N_BODIES as u64 -i-1);
       ctx.store512(&mut result,ZRow(4));
       e -= result.iter().sum::<f64>();
@@ -232,11 +232,5 @@ unsafe {
 
     println!("{:.9}", energy());
     println!("took {}",time_me(tm));
-  }
-}
-
-fn printA<const rows:usize,const cols:usize>(a:&[[f64;cols];rows]){
-  for i in 0..rows {
-      println!("{:?}", a[i])
   }
 }

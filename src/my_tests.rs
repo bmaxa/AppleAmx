@@ -1,5 +1,4 @@
-use amx::{prelude::*, XBytes, XRow, YBytes, YRow, ZRow};
-use std::time::*;
+use amx::{prelude::*, XRow, YRow, ZRow};
 extern {
   fn init_time()->u64;
   fn time_me(tm:u64)->f64;
@@ -8,13 +7,13 @@ fn main() {
     unsafe {
         let mut ctx = amx::AmxCtx::new().unwrap();
 
-        let in_x: Vec<u16> = vec![1;256];
-        let in_y: Vec<u16> = vec![3;256];
+        let _in_x: Vec<u16> = vec![1;256];
+        let _in_y: Vec<u16> = vec![3;256];
         let mut in_xf: Vec<f64> = vec![1.0;64];
         let mut in_yf: Vec<f64> = vec![3.0;64];
         let in_zf: Vec<f64> = vec![2.0;64*8];
         for i in 0..64 {
-          for j in 0..8{
+          for _ in 0..8{
             in_xf[i] += i as f64;
             in_yf[i] += i as f64;
           }
@@ -38,9 +37,9 @@ fn main() {
        let got_x = std::mem::transmute::<_,[[f64;8];8]>(ctx.read_x());
        let got_y = std::mem::transmute::<_,[[f64;8];8]>(ctx.read_y());
        println!("X");
-       printA::<8,8>(&got_x);
+       print_a::<8,8>(&got_x);
        println!("Y");
-       printA::<8,8>(&got_y);
+       print_a::<8,8>(&got_y);
 /*
             ctx.outer_product_u32_xy_to_z(
                 Some(XBytes(x_offset)),
@@ -78,7 +77,7 @@ fn main() {
               sum+=two.iter().sum::<f64>();
             }
             let res = time_me(tm);
-            println!("simd time {} sum {}",res, sum);
+            println!("simd time {:.18} sum {}",res, sum);
             let tm = init_time();
             let mut sum = 0.0;
             for i in 0..8000000 {
@@ -108,15 +107,15 @@ fn main() {
             ctx.extr_xv(3,7);
             let got_y = std::mem::transmute::<_,[[f64;8];8]>(ctx.read_x());
             println!("X");
-            printA::<8,8>(&got_y);
+            print_a::<8,8>(&got_y);
             let got_z = std::mem::transmute::<_,[[f64;8];64]>(ctx.read_z());
             println!("Z");
-            printA::<64,8>(&got_z);
+            print_a::<64,8>(&got_z);
 
     }
 }
-fn printA<const rows:usize,const cols:usize>(a:&[[f64;cols];rows]){
-  for i in 0..rows {
+fn print_a<const ROWS:usize,const COLS:usize>(a:&[[f64;COLS];ROWS]){
+  for i in 0..ROWS {
     println!("{:?}", a[i])
   }
 }

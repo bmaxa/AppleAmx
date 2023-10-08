@@ -91,9 +91,9 @@ pub mod prelude {
 ///
 /// [`amx::nativeops::AmxOps`]: crate::nativeops::AmxOps
 /// [`amx::nativeops::AmxOps::new`]: crate::nativeops::AmxOps::new
-static three:[f64;8] = [3.0;8];
-static zero_point_five:[f64;8] = [0.5;8];
-static one:[f64;8] = [1.0;8];
+static THREE:[f64;8] = [3.0;8];
+static ZERO_POINT_FIVE:[f64;8] = [0.5;8];
+static ONE:[f64;8] = [1.0;8];
 pub trait Amx: crate::ops::AmxOps {
     /// Load 512 bits (64 bytes) from memory to the specified register row.
     #[inline(always)]
@@ -609,7 +609,7 @@ pub trait Amx: crate::ops::AmxOps {
         *v -= row[i];
       }
       unsafe {
-        self.load512(&one,ZRow(1));
+        self.load512(&ONE,ZRow(1));
         self.load512(&magic,XRow(1));
       }
       self.extr_yh(zrow_in,1);
@@ -647,8 +647,8 @@ pub trait Amx: crate::ops::AmxOps {
       }
       unsafe {
         self.load512(&number,ZRow(60));
-        self.load512(&three,ZRow(62));
-        self.load512(&zero_point_five,ZRow(61));
+        self.load512(&THREE,ZRow(62));
+        self.load512(&ZERO_POINT_FIVE,ZRow(61));
       }
       for _ in 0..3 {
         self.extr_yh(60,0);// xn -> X
