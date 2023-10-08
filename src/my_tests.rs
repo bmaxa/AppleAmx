@@ -79,6 +79,32 @@ fn main() {
             let res = time_me(tm);
             println!("simd time {:.18} sum {}",res, sum);
             let tm = init_time();
+            for _ in 0..1000000 {
+              ctx.fma64_vec(0,0,0,0);
+            }
+            println!("single fma64_vec {}",time_me(tm));
+            let tm = init_time();
+            for _ in 0..1000000 {
+              ctx.fma32_vec(0,0,0,0);
+            }
+            println!("single fma32_vec {}",time_me(tm));
+            let tm = init_time();
+            for _ in 0..1000000 {
+              ctx.fma16_vec(0,0,0,0);
+            }
+            println!("single fma16_vec {}",time_me(tm));
+            let tm = init_time();
+            for _ in 0..1000000 {
+              ctx.extr_xh(0,0);
+            }
+            println!("single extr_xh {}",time_me(tm));
+            let tm = init_time();
+            for _ in 0..1000000 {
+              ctx.extr_yh(0,0);
+            }
+            println!("single extr_yh {}",time_me(tm));
+
+            let tm = init_time();
             let mut sum = 0.0;
             for i in 0..8000000 {
              // for v in two1 {

@@ -475,6 +475,32 @@ pub trait Amx: crate::ops::AmxOps {
       )
    }
     #[inline(always)]
+    fn fma32_vec(
+        &mut self,zrow:u64,xrow:u64,yrow:u64,nval:u64
+    ) {
+        self.fma32(
+        (yrow * 64)
+        | (xrow * 64) << 10
+        | zrow << 20
+        | 2 << 46
+        | nval << 41
+        | 1 << 63
+                );
+    }
+    #[inline(always)]
+    fn fma16_vec(
+        &mut self,zrow:u64,xrow:u64,yrow:u64,nval:u64
+    ) {
+        self.fma16(
+        (yrow * 64)
+        | (xrow * 64) << 10
+        | zrow << 20
+        | 2 << 46
+        | nval << 41
+        | 1 << 63
+                );
+    }
+    #[inline(always)]
     fn fma64_vec(
         &mut self,zrow:u64,xrow:u64,yrow:u64,nval:u64
     ) {
