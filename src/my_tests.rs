@@ -116,7 +116,7 @@ fn main() {
             println!("single int32_mat {}",time_me(tm));
 
             //ctx.reduce_u32_to_z();
-
+            let tm = init_time();
             let mut sum = 0.0;
             for i in 0..8000000 {
              // for v in two1 {
