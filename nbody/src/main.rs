@@ -22,13 +22,14 @@ unsafe fn advance(dt: f64, steps: i32) {
     let mut ctx = amx::AmxCtx::new().unwrap();
     ctx.load512(&dt,ZRow(5));
     for _ in 0 .. steps {
+        ctx.load512(&X,YRow(4));
+        ctx.load512(&Y,YRow(5));
+        ctx.load512(&Z,YRow(6));
+        ctx.load512(&MASS,YRow(7));
         for i in 0..N_BODIES as u64 {
-            ctx.load512(&X,YRow(5));
-            ctx.load512(&Y,YRow(6));
-            ctx.load512(&Z,YRow(7));
-            ctx.fma64_mat_y(0,5);
-            ctx.fma64_mat_y(1,6);
-            ctx.fma64_mat_y(2,7);
+            ctx.fma64_mat_y(0,4);
+            ctx.fma64_mat_y(1,5);
+            ctx.fma64_mat_y(2,6);
             ctx.load512(&X[i as usize +1],XRow(0));
             ctx.load512(&Y[i as usize +1],XRow(1));
             ctx.load512(&Z[i as usize +1],XRow(2));
@@ -83,7 +84,6 @@ unsafe fn advance(dt: f64, steps: i32) {
             VX[i as usize] += tmp_vx.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
             VY[i as usize] += tmp_vy.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
             VZ[i as usize] += tmp_vz.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
-            ctx.load512(&MASS,YRow(7));
             ctx.fma64_mat_y(7,7);
             ctx.extr_xh(i*8+7,3);
             ctx.extr_yh(6,3);// mag -> Y[3]
