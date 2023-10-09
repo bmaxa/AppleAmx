@@ -15,48 +15,40 @@ static mut VY:[f64;16] = [0.0,7.69901118419740425e-03 * YEAR,4.99852801234917238
 static mut VZ:[f64;16] = [0.0,-6.90460016972063023e-05 * YEAR,2.30417297573763929e-05 * YEAR,-2.96589568540237556e-05 * YEAR,-9.51592254519715870e-05 * YEAR,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
 static mut MASS:[f64;16] = [SOLAR_MASS,9.54791938424326609e-04 * SOLAR_MASS,2.85885980666130812e-04 * SOLAR_MASS,4.36624404335156298e-05 * SOLAR_MASS,5.15138902046611451e-05 * SOLAR_MASS,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
 unsafe fn advance(dt: f64, steps: i32) {
-    //let len = bodies.len();
-    let mut tmp_x = [0.0;8];
-    let mut tmp_y = [0.0;8];
-    let mut tmp_z= [0.0;8];
     let mut tmp_vx = [0.0;8];
     let mut tmp_vy = [0.0;8];
     let mut tmp_vz = [0.0;8];
-    let mut tmp_mass = [0.0;8];
     let dt = [dt;8];
     let mut ctx = amx::AmxCtx::new().unwrap();
     ctx.load512(&dt,ZRow(5));
     for _ in 0 .. steps {
         for i in 0..N_BODIES as u64 {
-            for j in 0..8 {
-              tmp_x[j] = X[i as usize];
-              tmp_y[j] = Y[i as usize];
-              tmp_z[j] = Z[i as usize];
-              tmp_mass[j] = MASS[i as usize];
-            }
-            ctx.load512(&tmp_x,ZRow(0));
-            ctx.load512(&tmp_y,ZRow(1));
-            ctx.load512(&tmp_z,ZRow(2));
+            ctx.load512(&X,YRow(5));
+            ctx.load512(&Y,YRow(6));
+            ctx.load512(&Z,YRow(7));
+            ctx.fma64_mat_y(0,5);
+            ctx.fma64_mat_y(1,6);
+            ctx.fma64_mat_y(2,7);
             ctx.load512(&X[i as usize +1],XRow(0));
             ctx.load512(&Y[i as usize +1],XRow(1));
             ctx.load512(&Z[i as usize +1],XRow(2));
-            ctx.fms64_vec_xz(0,0);//dx
-            ctx.fms64_vec_xz(1,1);//dy
-            ctx.fms64_vec_xz(2,2);//dz
-            ctx.extr_xh(0,7);
+            ctx.fms64_vec_xz(i*8+0,0);//dx
+            ctx.fms64_vec_xz(i*8+1,1);//dy
+            ctx.fms64_vec_xz(i*8+2,2);//dz
+            ctx.extr_xh(i*8+0,7);
             ctx.fma64_vec_x(40,7);// dx->Z[40]
-            ctx.extr_xh(1,7);
+            ctx.extr_xh(i*8+1,7);
             ctx.fma64_vec_x(41,7);// dy->Z[41]
-            ctx.extr_xh(2,7);
+            ctx.extr_xh(i*8+2,7);
             ctx.fma64_vec_x(42,7);// dz->Z[42]
-            ctx.extr_xh(0,0);
-            ctx.extr_yh(0,0);
+            ctx.extr_xh(i*8+0,0);
+            ctx.extr_yh(i*8+0,8);
             ctx.fma64_vec_xy(0,0,0,0);
-            ctx.extr_xh(1,1);
-            ctx.extr_yh(1,1);
+            ctx.extr_xh(i*8+1,1);
+            ctx.extr_yh(i*8+1,1);
             ctx.fma64_vec_xy(1,1,1,0);
-            ctx.extr_xh(2,2);
-            ctx.extr_yh(2,2);
+            ctx.extr_xh(i*8+2,2);
+            ctx.extr_yh(i*8+2,2);
             ctx.fma64_vec_xy(2,2,2,0);
             ctx.extr_xh(1,0);
             ctx.extr_yh(2,0);
@@ -82,16 +74,18 @@ unsafe fn advance(dt: f64, steps: i32) {
             ctx.extr_xh(40,0);
             ctx.extr_xh(41,1);
             ctx.extr_xh(42,2);
-            ctx.fms64_vec_xy(60,0,3,0);
-            ctx.fms64_vec_xy(61,1,3,0);
-            ctx.fms64_vec_xy(62,2,3,0);
+            ctx.fms64_vec_xy(60,0,3,N_BODIES as u64 - i - 1);
+            ctx.fms64_vec_xy(61,1,3,N_BODIES as u64 - i - 1);
+            ctx.fms64_vec_xy(62,2,3,N_BODIES as u64 - i - 1);
             ctx.store512(&mut tmp_vx,ZRow(60));
             ctx.store512(&mut tmp_vy,ZRow(61));
             ctx.store512(&mut tmp_vz,ZRow(62));
             VX[i as usize] += tmp_vx.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
             VY[i as usize] += tmp_vy.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
             VZ[i as usize] += tmp_vz.iter().take(N_BODIES -i as usize - 1).sum::<f64>();
-            ctx.load512(&tmp_mass,XRow(3));
+            ctx.load512(&MASS,YRow(7));
+            ctx.fma64_mat_y(7,7);
+            ctx.extr_xh(i*8+7,3);
             ctx.extr_yh(6,3);// mag -> Y[3]
             ctx.fma64_vec_xy(3,3,3,0);// massi_mag
 
