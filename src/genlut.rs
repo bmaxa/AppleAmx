@@ -188,11 +188,29 @@ impl<Left: LutOut, Right: LutOut> LutOut for either::Either<Left, Right> {
     }
 }
 
+trait TableRow {
+  fn table_row(&self)->usize;
+}
+
+impl TableRow for XRow {
+  #[inline(always)]
+  fn table_row(&self)->usize {
+    self.0
+  }
+}
+
+impl TableRow for YRow {
+  #[inline(always)]
+  fn table_row(&self)->usize {
+    self.0
+  }
+}
+
 #[inline(always)]
 pub(crate) fn lut(
     ops: &mut (impl AmxOps + ?Sized),
     input: impl LutIn,
-    XRow(table_row): XRow,
+    row: impl TableRow,
     output: impl LutOut,
     mode: impl LutTy,
 ) {
@@ -200,6 +218,6 @@ pub(crate) fn lut(
         input.as_genlut_input_param()
             | output.as_genlut_output_param()
             | (mode.genlut_mode() << 53)
-            | ((table_row as u64) << 60),
+            | ((row.table_row() as u64) << 60),
     );
 }
