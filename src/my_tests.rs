@@ -5,6 +5,8 @@ extern {
 }
 fn main() {
     unsafe {
+        let mut emuctx = amx::AmxEmuCtx::new();
+        //emuctx.fma64(0);
         let mut ctx = amx::AmxCtx::new().unwrap();
 
         let indexes:[i64;8] = [1,2,3,4,5,6,7,7];
