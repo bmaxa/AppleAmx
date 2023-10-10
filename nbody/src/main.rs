@@ -24,15 +24,15 @@ unsafe fn advance(dt: f64, steps: i32) {
     let dt = [dt;8];
     let mut ctx = amx::AmxCtx::new().unwrap();
     ctx.load512(&dt,ZRow(5));
+    ctx.load512(&MASS,YRow(7));
+    ctx.load512(&INDEXES,XRow(0));
+    ctx.load512(&VALUESU,XRow(1));
+    ctx.lut(XBytes(0),XRow(1),XRow(2),(Reverse,Index4,F64));
+    ctx.fma64_vec_x(27,2);
     for _ in 0 .. steps {
         ctx.load512(&X,YRow(4));
         ctx.load512(&Y,YRow(5));
         ctx.load512(&Z,YRow(6));
-        ctx.load512(&MASS,YRow(7));
-        ctx.load512(&INDEXES,XRow(0));
-        ctx.load512(&VALUESU,XRow(1));
-        ctx.lut(XBytes(0),XRow(1),XRow(2),(Reverse,Index4,F64));
-        ctx.fma64_vec_x(27,2);
         ctx.fma64_vec_y(28,4);
         ctx.fma64_vec_y(29,5);
         ctx.fma64_vec_y(30,6);
