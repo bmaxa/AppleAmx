@@ -202,7 +202,7 @@ impl TableRow for XRow {
 impl TableRow for YRow {
   #[inline(always)]
   fn table_row(&self)->usize {
-    self.0
+    self.0 | 1 << 59
   }
 }
 
