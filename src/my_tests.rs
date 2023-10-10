@@ -7,9 +7,9 @@ fn main() {
     unsafe {
         let mut ctx = amx::AmxCtx::new().unwrap();
 
-        let indexes:[u64;8] = [1,2,3,4,5,6,7,0];
-        let valuesu:[u64;8] = [0,1,2,3,4,6,6,7];
-        let valuesf = [0.0,1.0,2.0,3.0,4.0,6.0,6.0,7.0];
+        let indexes:[i64;8] = [1,2,3,4,5,6,7,7];
+        let valuesu:[i64;8] = [0,1,2,3,4,5,6,7];
+        let valuesf = [0.0,1.0,2.0,3.0,4.0,5.0,6.0,0.0];
         ctx.load512(&indexes,XRow(0));
         ctx.load512(&valuesu,XRow(1));
         ctx.lut(XBytes(0),XRow(1),XRow(2),(Reverse,Index4,F64));

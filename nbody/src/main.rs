@@ -14,7 +14,7 @@ static mut VX:[f64;16] = [0.0,1.66007664274403694e-03 * YEAR,-2.7674251072686241
 static mut VY:[f64;16] = [0.0,7.69901118419740425e-03 * YEAR,4.99852801234917238e-03 * YEAR,2.37847173959480950e-03 * YEAR,1.62824170038242295e-03 * YEAR,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
 static mut VZ:[f64;16] = [0.0,-6.90460016972063023e-05 * YEAR,2.30417297573763929e-05 * YEAR,-2.96589568540237556e-05 * YEAR,-9.51592254519715870e-05 * YEAR,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
 static mut MASS:[f64;16] = [SOLAR_MASS,9.54791938424326609e-04 * SOLAR_MASS,2.85885980666130812e-04 * SOLAR_MASS,4.36624404335156298e-05 * SOLAR_MASS,5.15138902046611451e-05 * SOLAR_MASS,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
-static INDEXES:[u64;8] = [1,2,3,4,5,6,7,0];
+static INDEXES:[u64;8] = [1,2,3,4,5,6,7,7];
 static VALUESU:[u64;8] = [0,1,2,3,4,5,6,7];
 
 unsafe fn advance(dt: f64, steps: i32) {
@@ -36,6 +36,7 @@ unsafe fn advance(dt: f64, steps: i32) {
         ctx.fma64_vec_y(28,4);
         ctx.fma64_vec_y(29,5);
         ctx.fma64_vec_y(30,6);
+        ctx.fma64_vec_y(45,7);
         for i in 0..N_BODIES as u64 {
             ctx.fma64_mat_y(0,4);
             ctx.fma64_mat_y(1,5);
@@ -82,7 +83,11 @@ unsafe fn advance(dt: f64, steps: i32) {
             ctx.extr_xh(5,0);
             ctx.extr_yh(0,0);
             ctx.fma64_vec_xy(0,0,0,0);//mag
-            ctx.load512(&MASS[i as usize +1],XRow(3));
+            ctx.extr_xh(27,7);
+            ctx.extr_xh(45,3);
+            ctx.lut(XBytes(7*64),XRow(3),YRow(0),(Normal,Index4,X64));
+            ctx.fma64_vec_y(45,0);
+            ctx.extr_xy(3,0);
             ctx.extr_yh(0,3);
             ctx.fma64_vec_y(6,3);// mag -> Z[6]
             ctx.fma64_vec_xy(3,3,3,0);// massj_mag
