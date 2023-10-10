@@ -1,4 +1,4 @@
-use amx::{prelude::*, XRow, YRow, ZRow};
+use amx::{prelude::*, XRow, YRow, ZRow,XBytes,Reverse,F64,Index4,Normal,X64};
 extern {
   fn init_time()->u64;
   fn time_me(tm:u64)->f64;
@@ -7,6 +7,20 @@ fn main() {
     unsafe {
         let mut ctx = amx::AmxCtx::new().unwrap();
 
+        let indexes:[u64;8] = [1,2,3,4,5,6,7,0];
+        let valuesu:[u64;8] = [0,1,2,3,4,6,6,7];
+        let valuesf = [0.0,1.0,2.0,3.0,4.0,6.0,6.0,7.0];
+        ctx.load512(&indexes,XRow(0));
+        ctx.load512(&valuesu,XRow(1));
+        ctx.lut(XBytes(0),XRow(1),XRow(2),(Reverse,Index4,F64));
+        ctx.load512(&valuesf,XRow(1));
+        ctx.lut(XBytes(2*64),XRow(1),XRow(0),(Normal,Index4,X64));
+        ctx.extr_yx(0,0);
+        ctx.extr_xy(1,0);
+        ctx.lut(XBytes(2*64),XRow(1),XRow(0),(Normal,Index4,X64));
+        let got_x = std::mem::transmute::<_,[[f64;8];8]>(ctx.read_x());
+        println!("X");
+        print_a::<8,8,f64>(&got_x);
         let _in_x: Vec<u16> = vec![1;256];
         let _in_y: Vec<u16> = vec![3;256];
         let mut in_xf: Vec<f64> = vec![1.0;64];
@@ -37,9 +51,9 @@ fn main() {
        let got_x = std::mem::transmute::<_,[[f64;8];8]>(ctx.read_x());
        let got_y = std::mem::transmute::<_,[[f64;8];8]>(ctx.read_y());
        println!("X");
-       print_a::<8,8>(&got_x);
+       print_a::<8,8,f64>(&got_x);
        println!("Y");
-       print_a::<8,8>(&got_y);
+       print_a::<8,8,f64>(&got_y);
             let mut two:[f64;8] = [2.0;8];
             let two1 = two;
             //ctx.fma64_vec(0,0,0,0);
@@ -145,14 +159,14 @@ fn main() {
             ctx.extr_xv(3,7);
             let got_y = std::mem::transmute::<_,[[f64;8];8]>(ctx.read_x());
             println!("X");
-            print_a::<8,8>(&got_y);
+            print_a::<8,8,f64>(&got_y);
             let got_z = std::mem::transmute::<_,[[f64;8];64]>(ctx.read_z());
             println!("Z");
-            print_a::<64,8>(&got_z);
+            print_a::<64,8,f64>(&got_z);
 
     }
 }
-fn print_a<const ROWS:usize,const COLS:usize>(a:&[[f64;COLS];ROWS]){
+fn print_a<const ROWS:usize,const COLS:usize,T:std::fmt::Debug>(a:&[[T;COLS];ROWS]){
   for i in 0..ROWS {
     println!("{:?}", a[i])
   }
