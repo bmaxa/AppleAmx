@@ -1,4 +1,4 @@
-use amx::{prelude::*, XRow, YRow, ZRow};
+use amx::{prelude::*, XRow, YRow, ZRow,XBytes,Reverse,Normal,Index4,F64,X64};
 const PI: f64 = 3.141592653589793;
 const SOLAR_MASS: f64 = 4.0 * PI * PI;
 const YEAR: f64 = 365.24;
@@ -14,6 +14,9 @@ static mut VX:[f64;16] = [0.0,1.66007664274403694e-03 * YEAR,-2.7674251072686241
 static mut VY:[f64;16] = [0.0,7.69901118419740425e-03 * YEAR,4.99852801234917238e-03 * YEAR,2.37847173959480950e-03 * YEAR,1.62824170038242295e-03 * YEAR,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
 static mut VZ:[f64;16] = [0.0,-6.90460016972063023e-05 * YEAR,2.30417297573763929e-05 * YEAR,-2.96589568540237556e-05 * YEAR,-9.51592254519715870e-05 * YEAR,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
 static mut MASS:[f64;16] = [SOLAR_MASS,9.54791938424326609e-04 * SOLAR_MASS,2.85885980666130812e-04 * SOLAR_MASS,4.36624404335156298e-05 * SOLAR_MASS,5.15138902046611451e-05 * SOLAR_MASS,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
+static INDEXES:[u64;8] = [1,2,3,4,5,6,7,0];
+static VALUESU:[u64;8] = [0,1,2,3,4,5,6,7];
+
 unsafe fn advance(dt: f64, steps: i32) {
     let mut tmp_vx = [0.0;8];
     let mut tmp_vy = [0.0;8];
@@ -26,13 +29,27 @@ unsafe fn advance(dt: f64, steps: i32) {
         ctx.load512(&Y,YRow(5));
         ctx.load512(&Z,YRow(6));
         ctx.load512(&MASS,YRow(7));
+        ctx.load512(&INDEXES,XRow(0));
+        ctx.load512(&VALUESU,XRow(1));
+        ctx.lut(XBytes(0),XRow(1),XRow(2),(Reverse,Index4,F64));
+        ctx.fma64_vec_x(27,2);
+        ctx.fma64_vec_y(28,4);
+        ctx.fma64_vec_y(29,5);
+        ctx.fma64_vec_y(30,6);
         for i in 0..N_BODIES as u64 {
             ctx.fma64_mat_y(0,4);
             ctx.fma64_mat_y(1,5);
             ctx.fma64_mat_y(2,6);
-            ctx.load512(&X[i as usize +1],XRow(0));
-            ctx.load512(&Y[i as usize +1],XRow(1));
-            ctx.load512(&Z[i as usize +1],XRow(2));
+            ctx.extr_xh(27,7);
+            ctx.extr_xh(28,3);
+            ctx.lut(XBytes(7*64),XRow(3),XRow(0),(Normal,Index4,X64));
+            ctx.fma64_vec_x(28,0);
+            ctx.extr_xh(29,3);
+            ctx.lut(XBytes(7*64),XRow(3),XRow(1),(Normal,Index4,X64));
+            ctx.fma64_vec_x(29,1);
+            ctx.extr_xh(30,3);
+            ctx.lut(XBytes(7*64),XRow(3),XRow(2),(Normal,Index4,X64));
+            ctx.fma64_vec_x(30,2);
             ctx.fms64_vec_xz(i*8+0,0);//dx
             ctx.fms64_vec_xz(i*8+1,1);//dy
             ctx.fms64_vec_xz(i*8+2,2);//dz
@@ -55,8 +72,8 @@ unsafe fn advance(dt: f64, steps: i32) {
             ctx.extr_yh(2,0);
             ctx.fma64_vec_xz(0,0);
             ctx.fma64_vec_yz(0,0);// dx^2+dy^2+dz^2
-            ctx.extr_xh(0,7);
-            ctx.fma64_vec_x(50,7);
+            ctx.extr_xh(0,1);
+            ctx.fma64_vec_x(50,1);
             ctx.sqrt(50,51);
             ctx.extr_yh(51,0);
             ctx.extr_xh(50,0);
