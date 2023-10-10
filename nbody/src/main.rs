@@ -24,15 +24,15 @@ unsafe fn advance(dt: f64, steps: i32) {
     let dt = [dt;8];
     let mut ctx = amx::AmxCtx::new().unwrap();
     ctx.load512(&dt,ZRow(5));
-    ctx.load512(&MASS,YRow(7));
-    ctx.load512(&INDEXES,XRow(0));
-    ctx.load512(&VALUESU,XRow(1));
-    ctx.lut(XBytes(0),XRow(1),XRow(2),(Reverse,Index4,F64));
-    ctx.fma64_vec_x(27,2);
     for _ in 0 .. steps {
         ctx.load512(&X,YRow(4));
         ctx.load512(&Y,YRow(5));
         ctx.load512(&Z,YRow(6));
+        ctx.load512(&MASS,YRow(7));
+        ctx.load512(&INDEXES,XRow(0));
+        ctx.load512(&VALUESU,XRow(1));
+        ctx.lut(XBytes(0),XRow(1),XRow(2),(Reverse,Index4,F64));
+        ctx.fma64_vec_x(27,2);
         ctx.fma64_vec_y(28,4);
         ctx.fma64_vec_y(29,5);
         ctx.fma64_vec_y(30,6);
@@ -74,15 +74,13 @@ unsafe fn advance(dt: f64, steps: i32) {
             ctx.fma64_vec_yz(0,0);// dx^2+dy^2+dz^2
             ctx.extr_xh(0,1);
             ctx.fma64_vec_x(50,1);
-            ctx.sqrt(50,51);
+            ctx.rsqrt(50,51);
+            ctx.rcp(50,52);
             ctx.extr_yh(51,0);
-            ctx.extr_xh(50,0);
+            ctx.extr_xh(52,0);
             ctx.fma64_vec_xy(0,0,0,0);
-            ctx.extr_xh(0,0);
-            ctx.fma64_vec_x(50,0);
-            ctx.rcp(50,51);
             ctx.extr_xh(5,0);
-            ctx.extr_yh(51,0);
+            ctx.extr_yh(0,0);
             ctx.fma64_vec_xy(0,0,0,0);//mag
             ctx.load512(&MASS[i as usize +1],XRow(3));
             ctx.extr_yh(0,3);
@@ -192,9 +190,9 @@ unsafe fn energy() -> f64 {
       ctx.fma64_vec_yz(0,0);
       ctx.extr_xh(0,7);
       ctx.fma64_vec_x(50,7);
-      ctx.sqrt(50,51);
-      ctx.rcp(51,50);
-      ctx.extr_xh(50,0);
+      ctx.rsqrt(50,51);
+      //ctx.rcp(51,50);
+      ctx.extr_xh(51,0);
       ctx.extr_yh(3,0);
       ctx.load512(&ZERO,ZRow(4));
       ctx.fma64_vec_xy(4,0,0,N_BODIES as u64 -i-1);

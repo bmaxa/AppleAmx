@@ -647,7 +647,7 @@ pub trait Amx: crate::ops::AmxOps {
       self.fma64_vec_x(zrow_out,0);
     }
     #[inline(always)]
-    fn sqrt(& mut self, zrow_in:u64,zrow_out:u64){
+    fn rsqrt(& mut self, zrow_in:u64,zrow_out:u64){
       let mut a = [0.0f32;8];
       let mut number = [0.0f64;8];
       unsafe {self.store512(&mut number,ZRow(zrow_in as usize));}
@@ -686,8 +686,14 @@ pub trait Amx: crate::ops::AmxOps {
         self.extr_xh(0,0);
         self.fma64_vec_x(60,0); // result -> Z[60]
       }
-      self.extr_yh(zrow_in,0);// s -> Y
       self.extr_xh(60,0);
+      self.fma64_vec_x(zrow_out,0);
+    }
+    #[inline(always)]
+    fn sqrt(& mut self, zrow_in:u64,zrow_out:u64){
+      self.rsqrt(zrow_in,zrow_out);
+      self.extr_yh(zrow_in,0);// s -> Y
+      self.extr_xh(zrow_out,0);
       self.fma64_vec_xy(zrow_out,0,0,0);// s * 1/sqrt(s)
     }
     #[inline(always)]
