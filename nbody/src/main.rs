@@ -85,10 +85,9 @@ unsafe fn advance(dt: f64, steps: i32) {
             ctx.extr_yh(0,0);
             ctx.fma64_vec_xy(0,0,0,0);//mag
             ctx.extr_xh(27,7);
-            ctx.extr_xh(45,3);
-            ctx.lut(XBytes(7*64),XRow(3),YRow(0),(Normal,Index4,X64));
-            ctx.fma64_vec_y(45,0);
-            ctx.extr_xy(3,0);
+            ctx.extr_yh(45,3);
+            ctx.lut(XBytes(7*64),YRow(3),XRow(3),(Normal,Index4,X64));
+            ctx.fma64_vec_x(45,3);
             ctx.extr_yh(0,3);
             ctx.fma64_vec_y(6,3);// mag -> Z[6]
             ctx.fma64_vec_xy(3,3,3,0);// massj_mag
