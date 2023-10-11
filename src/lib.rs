@@ -708,7 +708,7 @@ pub trait Amx: crate::ops::AmxOps {
 
     /// Perform (reverse) table lookup.
     #[inline(always)]
-    fn lut(&mut self, input: impl LutIn, table: XRow, output: impl LutOut, ty: impl LutTy) {
+    fn lut(&mut self, input: impl LutIn, table: impl TableRow, output: impl LutOut, ty: impl LutTy) {
         genlut::lut(self, input, table, output, ty);
     }
 }
