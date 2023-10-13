@@ -341,6 +341,120 @@ pub trait Amx: crate::ops::AmxOps {
                 );
     }
     #[inline(always)]
+    fn fma32_mat_xy(
+        &mut self,zrow:u64,xrow:u64,yrow:u64,nval:u64
+    ) {
+        self.fma32(
+        (yrow * 64)
+        | (xrow * 64) << 10
+        | zrow << 20
+        | 1 << 27
+        | 2 << 46
+        | nval << 41
+                );
+    }
+    #[inline(always)]
+    fn fma32_mat_xz(
+        &mut self,zrow:u64,xrow:u64
+    ) {
+        self.fma32(
+        (xrow * 64) << 10
+        | zrow << 20
+        | 1 << 28
+                );
+    }
+    #[inline(always)]
+    fn fma32_mat_yz(
+        &mut self,zrow:u64,yrow:u64
+    ) {
+        self.fma32(
+        (yrow * 64)
+        | zrow << 20
+        | 1 << 29
+                );
+    }
+    #[inline(always)]
+    fn fma32_mat_x(&mut self,zrow:u64,xrow:u64){
+      self.fma32(
+        (xrow*64) << 10
+        | zrow << 20
+        | 1 << 28
+        | 1 << 27
+      )
+   }
+    #[inline(always)]
+    fn fma32_mat_y(&mut self,zrow:u64,yrow:u64){
+      self.fma32(
+        (yrow*64)
+        | zrow << 20
+        | 1 << 29
+        | 1 << 27
+      )
+   }
+    #[inline(always)]
+    fn fms32_mat(
+        &mut self,zrow:u64,xrow:u64,yrow:u64,nval:u64
+    ) {
+        self.fms32(
+        (yrow * 64)
+        | (xrow * 64) << 10
+        | zrow << 20
+        | 2 <<46
+        | nval << 41
+                );
+    }
+    #[inline(always)]
+    fn fms32_mat_xy(
+        &mut self,zrow:u64,xrow:u64,yrow:u64,nval:u64
+    ) {
+        self.fms32(
+        (yrow * 64)
+        | (xrow * 64) << 10
+        | zrow << 20
+        | 1 << 27
+        | 2 << 46
+        | nval << 41
+                );
+    }
+    #[inline(always)]
+    fn fms32_mat_xz(
+        &mut self,zrow:u64,xrow:u64
+    ) {
+        self.fms32(
+        (xrow * 64) << 10
+        | zrow << 20
+        | 1 << 28
+                );
+    }
+    #[inline(always)]
+    fn fms32_mat_yz(
+        &mut self,zrow:u64,yrow:u64
+    ) {
+        self.fms32(
+        (yrow * 64)
+        | zrow << 20
+        | 1 << 29
+                );
+    }
+    #[inline(always)]
+    fn fms32_mat_x(&mut self,zrow:u64,xrow:u64){
+      self.fms32(
+        (xrow*64) << 10
+        | zrow << 20
+        | 1 << 28
+        | 1 << 27
+      )
+   }
+    #[inline(always)]
+    fn fms32_mat_y(&mut self,zrow:u64,yrow:u64){
+      self.fms32(
+        (yrow*64)
+        | zrow << 20
+        | 1 << 29
+        | 1 << 27
+      )
+   }
+    #[inline(always)]
     fn fma64_mat(
         &mut self,zrow:u64,xrow:u64,yrow:u64,nval:u64
     ) {
@@ -479,6 +593,119 @@ pub trait Amx: crate::ops::AmxOps {
         | 1 << 63
                 );
     }
+    #[inline(always)]
+    fn fma32_vec_xy(&mut self,zrow:u64,xrow:u64,yrow:u64,nval:u64){
+      self.fma32(
+        (yrow*64)
+        | (xrow*64) << 10
+        | zrow << 20
+        | 1 << 63
+        | 1 << 27
+        | 2 << 46
+        | nval << 41
+      )
+   }
+    #[inline(always)]
+    fn fma32_vec_xz(&mut self,zrow:u64,xrow:u64){
+      self.fma32(
+        (xrow*64) << 10
+        | zrow << 20
+        | 1 << 63
+        | 1 << 28
+      )
+   }
+    #[inline(always)]
+    fn fma32_vec_yz(&mut self,zrow:u64,yrow:u64){
+      self.fma32(
+        yrow*64
+        | zrow << 20
+        | 1 << 63
+        | 1 << 29
+      )
+   }
+    #[inline(always)]
+    fn fma32_vec_x(&mut self,zrow:u64,xrow:u64){
+      self.fma32(
+        (xrow*64) << 10
+        | zrow << 20
+        | 1 << 63
+        | 1 << 28
+        | 1 << 27
+      )
+   }
+    #[inline(always)]
+    fn fma32_vec_y(&mut self,zrow:u64,yrow:u64){
+      self.fma32(
+        yrow*64
+        | zrow << 20
+        | 1 << 63
+        | 1 << 29
+        | 1 << 27
+      )
+   }
+    #[inline(always)]
+    fn fms32_vec(
+        &mut self,zrow:u64,xrow:u64,yrow:u64,nval:u64
+    ) {
+        self.fms32(
+        (yrow * 64)
+        | (xrow * 64) << 10
+        | zrow << 20
+        | 1 << 63
+        | 2 << 46
+        | nval << 41
+                );
+    }
+    #[inline(always)]
+    fn fms32_vec_xy(&mut self,zrow:u64,xrow:u64,yrow:u64,nval:u64){
+      self.fms32(
+        (yrow*64)
+        | (xrow*64) << 10
+        | zrow << 20
+        | 1 << 63
+        | 1 << 27
+        | 2 << 46
+        | nval << 41
+      )
+   }
+    #[inline(always)]
+    fn fms32_vec_xz(&mut self,zrow:u64,xrow:u64){
+      self.fms32(
+        (xrow*64) << 10
+        | zrow << 20
+        | 1 << 63
+        | 1 << 28
+      )
+   }
+    #[inline(always)]
+    fn fms32_vec_yz(&mut self,zrow:u64,yrow:u64){
+      self.fms32(
+        yrow*64
+        | zrow << 20
+        | 1 << 63
+        | 1 << 29
+      )
+   }
+    #[inline(always)]
+    fn fms32_vec_x(&mut self,zrow:u64,xrow:u64){
+      self.fms32(
+        (xrow*64) << 10
+        | zrow << 20
+        | 1 << 63
+        | 1 << 28
+        | 1 << 27
+      )
+   }
+    #[inline(always)]
+    fn fms32_vec_y(&mut self,zrow:u64,yrow:u64){
+      self.fms32(
+        yrow*64
+        | zrow << 20
+        | 1 << 63
+        | 1 << 29
+        | 1 << 27
+      )
+   }
     #[inline(always)]
     fn fma16_vec(
         &mut self,zrow:u64,xrow:u64,yrow:u64,nval:u64
