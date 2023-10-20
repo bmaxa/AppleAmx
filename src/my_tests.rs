@@ -153,18 +153,50 @@ fn main() {
             ctx.store512(&mut rcp,ZRow(63));
             println!("rcp\n{:?}",rcp);
 
-
 //            let got_z = std::mem::transmute::<_,[[u32;16];64]>(ctx.read_z());
-            ctx.fma64_mat_x(3,0);
-            ctx.fma64_mat_y(5,1);
-            ctx.fma64_mat(3,0,0,1);
-            ctx.extr_xv(3,7);
-            let got_y = std::mem::transmute::<_,[[f64;8];8]>(ctx.read_x());
+            let mut tmp1 = [2.0f32;16];
+            let mut tmp2 = [1.0f32;16];
+            for i in 0..16 {
+              tmp2[i] = i as f32;
+            }
+            ctx.load512(&tmp1,XRow(0));
+            ctx.load512(&tmp1,ZRow(50));
+            ctx.load512(&tmp2,YRow(1));
+            /*ctx.fma32_mat_x(3,0);*/
+            //ctx.fma32_mat_y(0,1);
+            /*ctx.fma32_mat(3,0,0,1);*/
+            /*ctx.extr_xv(3,7);*/
+            let tm = init_time();
+            let mut sum:f64 = 0.0;
+            for _ in 0..1000000{
+              for i in 0..16 {
+                sum += (1.0/tmp1[i]*tmp1[i].sqrt()) as f64;
+              }
+            }
+            println!("seq time {}, sum {:.9}",time_me(tm),sum);
+            let tm = init_time();
+            let mut sum:f64 = 0.0;
+            for _ in 0..1000000 {
+              ctx.load512(&tmp1,ZRow(50));
+              ctx.rcp32(50,51);
+              ctx.sqrt32(50,52);
+              ctx.extr_xh(51,0);
+              ctx.extr_yh(52,0);
+              ctx.fma32_vec_xy(0,0,0,0);
+              ctx.store512(&mut tmp2,ZRow(0));
+              sum += tmp2.iter().sum::<f32>() as f64;
+            }
+            println!("simd time {}, sum {:.9}",time_me(tm),sum);
+            println!("cmp {:.10} {:.10}",1.0/tmp1[0]*tmp1[0].sqrt(),tmp2[0]);
+            let got_x = std::mem::transmute::<_,[[f32;16];8]>(ctx.read_x());
             println!("X");
-            print_a::<8,8,f64>(&got_y);
-            let got_z = std::mem::transmute::<_,[[f64;8];64]>(ctx.read_z());
+            print_a::<8,16,f32>(&got_x);
+            let got_y = std::mem::transmute::<_,[[f32;16];8]>(ctx.read_y());
+            println!("Y");
+            print_a::<8,16,f32>(&got_x);
+            let got_z = std::mem::transmute::<_,[[f32;16];64]>(ctx.read_z());
             println!("Z");
-            print_a::<64,8,f64>(&got_z);
+            print_a::<64,16,f32>(&got_z);
 
     }
 }

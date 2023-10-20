@@ -91,8 +91,11 @@ pub mod prelude {
 /// [`amx::nativeops::AmxOps`]: crate::nativeops::AmxOps
 /// [`amx::nativeops::AmxOps::new`]: crate::nativeops::AmxOps::new
 static THREE:[f64;8] = [3.0;8];
+static THREE32:[f32;16] = [3.0;16];
 static ZERO_POINT_FIVE:[f64;8] = [0.5;8];
+static ZERO_POINT_FIVE32:[f32;16] = [0.5;16];
 static ONE:[f64;8] = [1.0;8];
+static ONE32:[f32;16] = [1.0;16];
 pub trait Amx: crate::ops::AmxOps {
     /// Load 512 bits (64 bytes) from memory to the specified register row.
     #[inline(always)]
@@ -874,6 +877,34 @@ pub trait Amx: crate::ops::AmxOps {
       self.fma64_vec_x(zrow_out,0);
     }
     #[inline(always)]
+    fn rcp32(&mut self,zrow_in:u64,zrow_out:u64){
+      let mut row = [0u32;16];
+      let mut magic:[u32;16] = [0x7F000000;16];
+      unsafe { self.store512(&mut row,ZRow(zrow_in as usize));}
+      for (i,mut v) in magic.iter_mut().enumerate() {
+        *v -= row[i];
+      }
+      unsafe {
+        self.load512(&ONE32,ZRow(1));
+        self.load512(&magic,XRow(1));
+      }
+      self.extr_yh(zrow_in,1);
+      self.fms32_vec(1,1,1,0);
+      self.extr_yh(1,1);
+      for _ in 0..3 {
+        self.fma32_vec_x(1,1);
+        self.fma32_vec(1,1,1,0);
+        self.extr_xh(1,1);
+        self.extr_xy(0,1);
+        self.fma32_vec_xy(2,0,1,0);
+        self.extr_yh(2,1);
+      }
+      self.extr_xh(1,1);
+      self.fma32_vec(1,1,1,0);
+      self.extr_xh(1,0);
+      self.fma32_vec_x(zrow_out,0);
+    }
+    #[inline(always)]
     fn rsqrt(& mut self, zrow_in:u64,zrow_out:u64){
       let mut a = [0.0f32;8];
       let mut number = [0.0f64;8];
@@ -917,11 +948,54 @@ pub trait Amx: crate::ops::AmxOps {
       self.fma64_vec_x(zrow_out,0);
     }
     #[inline(always)]
+    fn rsqrt32(& mut self, zrow_in:u64,zrow_out:u64){
+      let mut number = [0.0f32;16];
+      unsafe {self.store512(&mut number,ZRow(zrow_in as usize));}
+      for mut v in number.iter_mut() {
+        unsafe {
+          let mut v = std::mem::transmute::<_,*mut u32>(v);
+          *v = 0x5f3759df - (*v >> 1);
+        }
+      }
+      unsafe {
+        self.load512(&number,ZRow(60));
+        self.load512(&THREE32,ZRow(62));
+        self.load512(&ZERO_POINT_FIVE32,ZRow(61));
+      }
+      for _ in 0..3 {
+        self.extr_yh(60,0);// xn -> X
+        self.extr_xh(60,0);// xn -> Y
+        self.fma32_vec_xy(0,0,0,0);// xn ^2
+        self.extr_xh(zrow_in,0);// s -> X
+        self.extr_yh(0,0); // Z -> Y
+        self.extr_xh(62,7);
+        self.fma32_vec_x(0,7);// 3 -> Z
+        self.fms32_vec(0,0,0,0);// 3 - s * xn ^ 2
+        self.extr_xh(60,0);// xn -> X
+        self.extr_yh(0,0);// Z -> Y
+        self.fma32_vec_xy(0,0,0,0);// xn * (3- s * xn ^2)
+        self.extr_xh(0,0);// Z -> X
+        self.extr_yh(61,0); // 0.5 -> Y
+        self.fma32_vec_xy(0,0,0,0);// xn * (3 - s * xn^2)/2
+        self.extr_xh(0,0);
+        self.fma32_vec_x(60,0); // result -> Z[60]
+      }
+      self.extr_xh(60,0);
+      self.fma32_vec_x(zrow_out,0);
+    }
+    #[inline(always)]
     fn sqrt(& mut self, zrow_in:u64,zrow_out:u64){
       self.rsqrt(zrow_in,zrow_out);
       self.extr_yh(zrow_in,0);// s -> Y
       self.extr_xh(zrow_out,0);
       self.fma64_vec_xy(zrow_out,0,0,0);// s * 1/sqrt(s)
+    }
+    #[inline(always)]
+    fn sqrt32(& mut self, zrow_in:u64,zrow_out:u64){
+      self.rsqrt32(zrow_in,zrow_out);
+      self.extr_yh(zrow_in,0);// s -> Y
+      self.extr_xh(zrow_out,0);
+      self.fma32_vec_xy(zrow_out,0,0,0);// s * 1/sqrt(s)
     }
     #[inline(always)]
     fn clear(&mut self){
